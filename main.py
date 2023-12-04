@@ -104,9 +104,18 @@ def start_ride(arg: Dict[str, str]):
         rides[ride_id] = {
             "rider_id": rider_id,
             "driver_id": selected_ride[driver_index - 1],
+            "started": True,
         }
         print(f"RIDE_STARTED {ride_id}")
     else:
+        print("INVALID_RIDE")
+        return
+
+
+def stop_ride(arg: Dict[str, str]):
+    ride_id, destination_x, destination_y, time_taken = arg.values()
+
+    if rides.get(ride_id) == None:
         print("INVALID_RIDE")
         return
 
@@ -133,6 +142,8 @@ def process_command(command: str):
             match_rider(arg_map)
         elif command == "START_RIDE":
             start_ride(arg_map)
+        elif command == "STOP_RIDE":
+            stop_ride(arg_map)
         else:
             print("Error: Command Not Yet Implemented", file=sys.stderr)
 
