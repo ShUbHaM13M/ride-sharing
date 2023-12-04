@@ -21,6 +21,8 @@ commands = {
 
 drivers = {}
 riders = {}
+matched_rides = {}
+rides = {}
 
 
 def add_driver(info: Dict[str, str]):
@@ -69,6 +71,7 @@ def match_rider(info: Dict[str, str]):
         return
 
     drivers_in_range.sort(key=lambda x: x["distance"])
+    matched_rides[rider_id] = drivers_in_range
 
     temp = drivers_in_range[0]["distance"]
     equidistant = all(val["distance"] == temp for val in drivers_in_range)
@@ -80,6 +83,32 @@ def match_rider(info: Dict[str, str]):
     for driver in drivers_in_range:
         print(driver["id"], end=" ")
     print("")
+
+
+def start_ride(arg: Dict[str, str]):
+    ride_id, driver_index, rider_id = arg.values()
+
+    try:
+        driver_index = int(driver_index)
+    except ValueError:
+        raise Exception(f"Driver index: {driver_index} is not a number")
+
+    if 1 > driver_index or matched_rides.get(ride_id) != None:
+        print("INVALID_RIDE")
+        return
+
+    if selected_ride := matched_rides.get(rider_id):
+        if driver_index > len(selected_ride):
+            print("INVALID_RIDE")
+            return
+        rides[ride_id] = {
+            "rider_id": rider_id,
+            "driver_id": selected_ride[driver_index - 1],
+        }
+        print(f"RIDE_STARTED {ride_id}")
+    else:
+        print("INVALID_RIDE")
+        return
 
 
 def process_command(command: str):
@@ -102,6 +131,8 @@ def process_command(command: str):
             add_rider(arg_map)
         elif command == "MATCH":
             match_rider(arg_map)
+        elif command == "START_RIDE":
+            start_ride(arg_map)
         else:
             print("Error: Command Not Yet Implemented", file=sys.stderr)
 
