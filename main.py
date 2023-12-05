@@ -1,9 +1,14 @@
 import math
+from pprint import pprint
 from typing import Dict
 from sys import argv
 import sys
 
 MAX_RANGE = 5
+BASE_FARE_AMOUNT = 50
+DISTANCE_AMOUNT = 6.5
+TIME_AMOUNT = 2
+SERVICE_TAX = 0.2
 
 commands = {
     "ADD_DRIVER": ["DRIVER_ID", "X_COORDINATE", "Y_COORDINATE"],
@@ -124,15 +129,40 @@ def stop_ride(arg: Dict[str, str]):
         try:
             selected_ride.update(
                 {
-                    "destination_x": destination_x,
-                    "destination_y": destination_y,
-                    "time_taken": time_taken,
+                    "destination": [int(destination_x), int(destination_y)],
+                    "time_taken": int(time_taken),
                 }
             )
             print(f"RIDE_STOPPED {ride_id}")
         except ValueError:
             print("Error: Values of destination or time taken is not number")
             sys.exit(1)
+    else:
+        print("INVALID_RIDE")
+        return
+
+
+def bill(arg: Dict[str, str]):
+    (ride_id,) = arg.values()
+    total_amount: float = BASE_FARE_AMOUNT
+
+    if selected_ride := rides.get(ride_id):
+        if selected_ride["started"]:
+            print("RIDE_NOT_COMPLETED")
+            return
+
+        driver_id = selected_ride["driver"]["id"]
+
+        start = riders[selected_ride["rider_id"]]
+        destination = selected_ride["destination"]
+        distance = math.dist(start, destination)
+        distance = round(distance, 2)
+
+        total_amount += selected_ride["time_taken"] * TIME_AMOUNT
+        total_amount += distance * DISTANCE_AMOUNT
+        total_amount += total_amount * SERVICE_TAX
+
+        print(f"BILL {ride_id} {driver_id} {total_amount:.2f}")
     else:
         print("INVALID_RIDE")
         return
@@ -162,6 +192,8 @@ def process_command(command: str):
             start_ride(arg_map)
         elif command == "STOP_RIDE":
             stop_ride(arg_map)
+        elif command == "BILL":
+            bill(arg_map)
         else:
             print("Error: Command Not Yet Implemented", file=sys.stderr)
 
