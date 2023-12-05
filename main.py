@@ -103,7 +103,7 @@ def start_ride(arg: Dict[str, str]):
             return
         rides[ride_id] = {
             "rider_id": rider_id,
-            "driver_id": selected_ride[driver_index - 1],
+            "driver": selected_ride[driver_index - 1],
             "started": True,
         }
         print(f"RIDE_STARTED {ride_id}")
@@ -115,7 +115,25 @@ def start_ride(arg: Dict[str, str]):
 def stop_ride(arg: Dict[str, str]):
     ride_id, destination_x, destination_y, time_taken = arg.values()
 
-    if rides.get(ride_id) == None:
+    if (selected_ride := rides.get(ride_id)) != None:
+        if not selected_ride["started"]:
+            print("INVALID_RIDE")
+            return
+        selected_ride["started"] = False
+
+        try:
+            selected_ride.update(
+                {
+                    "destination_x": destination_x,
+                    "destination_y": destination_y,
+                    "time_taken": time_taken,
+                }
+            )
+            print(f"RIDE_STOPPED {ride_id}")
+        except ValueError:
+            print("Error: Values of destination or time taken is not number")
+            sys.exit(1)
+    else:
         print("INVALID_RIDE")
         return
 
