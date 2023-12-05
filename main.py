@@ -37,7 +37,6 @@ def add_driver(info: Dict[str, str]):
             int(info["X_COORDINATE"]),
             int(info["Y_COORDINATE"]),
         ]
-        print(f"Added Driver: {driver_id}")
     except ValueError:
         print(f"Error: Coordinate values of Rider {driver_id} is not a number")
         sys.exit(1)
@@ -50,7 +49,6 @@ def add_rider(info: Dict[str, str]):
             int(info["X_COORDINATE"]),
             int(info["Y_COORDINATE"]),
         ]
-        print(f"Added Rider: {rider_id}")
     except ValueError:
         print(f"Error: Coordinate values of Rider {rider_id} is not a number")
         sys.exit(1)
