@@ -1,6 +1,4 @@
-from functools import reduce
 import math
-from pprint import pprint
 from typing import Dict
 from sys import argv
 import sys
