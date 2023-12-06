@@ -94,7 +94,7 @@ def start_ride(arg: Dict[str, str]):
         return
 
     if selected_ride := matched_rides.get(rider_id):
-        if driver_index > len(selected_ride):
+        if driver_index > len(selected_ride) or rides.get(ride_id):
             print("INVALID_RIDE")
             return
         rides[ride_id] = {
