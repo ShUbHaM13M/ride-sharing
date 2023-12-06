@@ -1,3 +1,4 @@
+from functools import reduce
 import math
 from pprint import pprint
 from typing import Dict
@@ -28,22 +29,6 @@ drivers = {}
 riders = {}
 matched_rides = {}
 rides = {}
-
-
-def find_duplicate_indices(lst):
-    indices = {}
-    for i, item in enumerate(lst):
-        key = item["distance"]
-        if key in indices:
-            indices[key].append(item["id"])
-        else:
-            indices[key] = [item["id"]]
-
-    duplicate_indices = {
-        item: index_list for item, index_list in indices.items() if len(index_list) > 1
-    }
-
-    return duplicate_indices
 
 
 def add_driver(info: Dict[str, str]):
@@ -89,18 +74,8 @@ def match_rider(info: Dict[str, str]):
         print("NO_DRIVERS_AVAILABLE")
         return
 
-    drivers_in_range.sort(key=lambda x: x["distance"])
+    drivers_in_range.sort(key=lambda x: (x["distance"], x["id"]))
     matched_rides[rider_id] = drivers_in_range
-
-    # temp = drivers_in_range[0]["distance"]
-    # equidistant = any(val["distance"] == temp for val in drivers_in_range)
-    duplicates = find_duplicate_indices(drivers_in_range)
-    if len(duplicates.keys()) != 0:
-        # TODO: Sort using lexicographical order
-        # sorted(sorted(drivers_in_range), key=str.upper)
-        for duplicate in duplicates.values():
-            duplicate.sort()
-            print(duplicate)
 
     print("DRIVERS_MATCHED", end=" ")
     for driver in drivers_in_range:
