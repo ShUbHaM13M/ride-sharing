@@ -3,6 +3,8 @@ from typing import Dict
 from sys import argv
 import sys
 
+from src.ride_sharing import RideSharing
+
 MAX_RANGE = 5
 BASE_FARE_AMOUNT = 50
 DISTANCE_AMOUNT = 6.5
@@ -22,6 +24,7 @@ commands = {
     ],
     "BILL": ["RIDE_ID"],
 }
+
 
 drivers = {}
 riders = {}
@@ -193,6 +196,11 @@ def main():
     if len(argv) != 2:
         raise Exception("File path not entered")
     file_path = argv[1]
+
+    ride_sharing = RideSharing()
+    output = ride_sharing.process_file(file_path)
+    print(output)
+    return
 
     with open(file_path, "r") as f:
         lines = f.readlines()
