@@ -17,10 +17,10 @@ commands = {
 }
 
 
-MAX_RANGE = 5
-BASE_FARE_AMOUNT = 50
+MAX_RANGE = 5.0
+BASE_FARE_AMOUNT = 50.0
 DISTANCE_AMOUNT = 6.5
-TIME_AMOUNT = 2
+TIME_AMOUNT = 2.0
 SERVICE_TAX = 0.2
 
 
@@ -47,10 +47,11 @@ class RideSharing:
     def add_driver(self, arg: Dict[str, str]):
         driver_id = arg["DRIVER_ID"]
         try:
-            self.drivers[driver_id] = [
-                int(arg["X_COORDINATE"]),
-                int(arg["Y_COORDINATE"]),
-            ]
+            self.drivers[driver_id] = {
+                "id": driver_id,
+                "pos": [int(arg["X_COORDINATE"]), int(arg["Y_COORDINATE"])],
+                "occupied": False,
+            }
         except ValueError:
             print(f"Error: Coordinate values of Rider {driver_id} is not a number")
             sys.exit(1)
@@ -58,22 +59,24 @@ class RideSharing:
     def add_rider(self, arg: Dict[str, str]):
         rider_id = arg["RIDER_ID"]
         try:
-            self.riders[rider_id] = [
-                int(arg["X_COORDINATE"]),
-                int(arg["Y_COORDINATE"]),
-            ]
+            self.riders[rider_id] = {
+                "id": rider_id,
+                "pos": [
+                    int(arg["X_COORDINATE"]),
+                    int(arg["Y_COORDINATE"]),
+                ],
+            }
         except ValueError:
             print(f"Error: Coordinate values of Rider {rider_id} is not a number")
             sys.exit(1)
 
     def match_rider(self, arg: Dict[str, str]):
         rider_id = arg["RIDER_ID"]
-        rider_pos = self.riders[rider_id]
+        rider_pos = self.riders[rider_id]["pos"]
         drivers_in_range = []
-
-        for driver_id, driver_pos in self.drivers.items():
-            distance = math.floor(math.dist(rider_pos, driver_pos))
-            if distance <= MAX_RANGE:
+        for driver_id, driver in self.drivers.items():
+            distance = math.dist(rider_pos, driver["pos"])
+            if distance <= MAX_RANGE and not driver["occupied"]:
                 driver = {
                     "id": driver_id,
                     "pos": self.drivers[driver_id],
@@ -82,8 +85,7 @@ class RideSharing:
                 drivers_in_range.append(driver)
 
         if len(drivers_in_range) == 0:
-            print("NO_DRIVERS_AVAILABLE")
-            return
+            return "NO_DRIVERS_AVAILABLE"
 
         drivers_in_range.sort(key=lambda x: (x["distance"], x["id"]))
         self.matched_rides[rider_id] = drivers_in_range
@@ -107,9 +109,13 @@ class RideSharing:
         if selected_ride := self.matched_rides.get(rider_id):
             if driver_index > len(selected_ride) or self.rides.get(ride_id):
                 return "INVALID_RIDE"
+
+            driver_id = selected_ride[driver_index - 1]["id"]
+            self.drivers[driver_id]["occupied"] = True
+
             self.rides[ride_id] = {
                 "rider_id": rider_id,
-                "driver": selected_ride[driver_index - 1],
+                "driver": self.drivers[driver_id],
                 "started": True,
             }
             return f"RIDE_STARTED {ride_id}"
@@ -125,12 +131,15 @@ class RideSharing:
             selected_ride["started"] = False
 
             try:
+                destination = [int(destination_x), int(destination_y)]
                 selected_ride.update(
                     {
-                        "destination": [int(destination_x), int(destination_y)],
+                        "destination": destination,
                         "time_taken": int(time_taken),
                     }
                 )
+                driver_id = selected_ride["driver"]["id"]
+                self.drivers[driver_id] = destination
                 return f"RIDE_STOPPED {ride_id}"
             except ValueError:
                 print(
@@ -150,14 +159,14 @@ class RideSharing:
 
             driver_id = selected_ride["driver"]["id"]
 
-            start = self.riders[selected_ride["rider_id"]]
+            start = self.riders[selected_ride["rider_id"]]["pos"]
             destination = selected_ride["destination"]
             distance = math.dist(start, destination)
             distance = round(distance, 2)
 
             total_amount += selected_ride["time_taken"] * TIME_AMOUNT
             total_amount += distance * DISTANCE_AMOUNT
-            total_amount += total_amount * SERVICE_TAX
+            total_amount += round(total_amount * SERVICE_TAX, 2)
 
             return f"BILL {ride_id} {driver_id} {total_amount:.2f}"
         else:
