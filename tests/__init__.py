@@ -3,6 +3,10 @@ from src.ride_sharing import RideSharing
 
 
 class TestRideSharing(unittest.TestCase):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self.maxDiff = None
+
     def _test(self, file_path: str, expected: str):
         ride_sharing = RideSharing()
         output = ride_sharing.process_file(file_path)
@@ -38,10 +42,10 @@ BILL RIDE-001 D13 268.36"""
         expected = """NO_DRIVERS_AVAILABLE
 DRIVERS_MATCHED D1
 DRIVERS_MATCHED D2 D1
-DRIVERS_MATCHED D14 D15 D
+DRIVERS_MATCHED D14 D15 D16 D1
 DRIVERS_MATCHED D15 D2 D1
 RIDE_STARTED RIDE-001
-DRIVERS_MATCHED D14 D16 D
+DRIVERS_MATCHED D14 D16 D17 D1
 RIDE_STOPPED RIDE-001
 BILL RIDE-001 D15 327.20
 RIDE_STARTED RIDE-002
@@ -54,10 +58,10 @@ BILL RIDE-002 D17 440.26"""
 
     def test_input5(self):
         expected = """DRIVERS_MATCHED D1
-DRIVERS_MATCHED D3 D1 D
+DRIVERS_MATCHED D3 D1 D2
 RIDE_STARTED RIDE-001
-DRIVERS_MATCHED D6 D7 D
-DRIVERS_MATCHED D5 D6 D
+DRIVERS_MATCHED D6 D7 D5 D3 D4
+DRIVERS_MATCHED D5 D6 D7 D3
 RIDE_STOPPED RIDE-001
 RIDE_STARTED RIDE-002
 RIDE_STARTED RIDE-003
